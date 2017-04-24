@@ -245,6 +245,41 @@ describe MessagePack::Factory do
     end
   end
 
+  describe 'the special treatment of strings with ext type' do
+    let(:packer) { subject.packer }
+    let(:unpacker) { subject.unpacker }
+
+    def string_after_roundtrip
+      packed_string = packer.pack('a string').to_s
+      unpacker.feed(packed_string).unpack
+    end
+
+    context 'if no ext type is registered for strings' do
+      it 'preserves the value of the string' do
+        expect(string_after_roundtrip).to eq 'a string'
+      end
+    end
+
+    context 'if an ext type is registered for strings' do
+      context 'if using the default serializer' do
+        it 'can not register' do
+          expect { subject.register_type(0x00, ::String) }.to raise_error(NameError)
+        end
+      end
+
+      context 'if using a custom serializer' do
+        before { subject.register_type(0x00, ::String, :packer => pack_proc, :unpacker => unpack_proc) }
+
+        let(:pack_proc) { lambda { |str| "enc:#{str}" } }
+        let(:unpack_proc) { lambda { |raw| "dec:#{raw}" } }
+
+        it 'uses the procs' do
+          expect(string_after_roundtrip).to eq 'dec:enc:a string'
+        end
+      end
+    end
+  end
+
   describe 'the special treatment of symbols with ext type' do
     let(:packer) { subject.packer }
     let(:unpacker) { subject.unpacker }

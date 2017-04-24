@@ -33,6 +33,7 @@ struct msgpack_factory_t {
     msgpack_packer_ext_registry_t pkrg;
     msgpack_unpacker_ext_registry_t ukrg;
     bool has_symbol_ext_type;
+    bool has_string_ext_type;
 };
 
 #define FACTORY(from, name) \
@@ -98,6 +99,7 @@ VALUE MessagePack_Factory_packer(int argc, VALUE* argv, VALUE self)
 
     msgpack_packer_ext_registry_destroy(&pk->ext_registry);
     msgpack_packer_ext_registry_dup(&fc->pkrg, &pk->ext_registry);
+    pk->has_string_ext_type = fc->has_string_ext_type;
     pk->has_symbol_ext_type = fc->has_symbol_ext_type;
 
     return packer;
@@ -191,6 +193,10 @@ static VALUE Factory_register_type(int argc, VALUE* argv, VALUE self)
     }
 
     msgpack_packer_ext_registry_put(&fc->pkrg, ext_module, ext_type, packer_proc, packer_arg);
+
+    if (ext_module == rb_cString) {
+        fc->has_string_ext_type = true;
+    }
 
     if (ext_module == rb_cSymbol) {
         fc->has_symbol_ext_type = true;
