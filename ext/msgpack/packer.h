@@ -33,6 +33,7 @@ struct msgpack_packer_t {
 
     bool compatibility_mode;
     bool has_symbol_ext_type;
+    bool has_string_ext_type;
 
     ID to_msgpack_method;
     VALUE to_msgpack_arg;
@@ -416,8 +417,15 @@ static inline bool msgpack_packer_is_utf8_compat_string(VALUE v, int encindex)
 }
 #endif
 
+void msgpack_packer_write_other_value(msgpack_packer_t* pk, VALUE v);
+
 static inline void msgpack_packer_write_string_value(msgpack_packer_t* pk, VALUE v)
 {
+    if (pk->has_string_ext_type) {
+        msgpack_packer_write_other_value(pk, v);
+        return;
+    }
+
     /* actual return type of RSTRING_LEN is long */
     unsigned long len = RSTRING_LEN(v);
     if(len > 0xffffffffUL) {
@@ -462,8 +470,6 @@ static inline void msgpack_packer_write_symbol_string_value(msgpack_packer_t* pk
     msgpack_packer_write_string_value(pk, str);
 #endif
 }
-
-void msgpack_packer_write_other_value(msgpack_packer_t* pk, VALUE v);
 
 static inline void msgpack_packer_write_symbol_value(msgpack_packer_t* pk, VALUE v)
 {

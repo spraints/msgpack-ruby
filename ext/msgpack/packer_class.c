@@ -290,6 +290,10 @@ static VALUE Packer_register_type(int argc, VALUE* argv, VALUE self)
         pk->has_symbol_ext_type = true;
     }
 
+    if (ext_module == rb_cString) {
+        pk->has_string_ext_type = true;
+    }
+
     return Qnil;
 }
 

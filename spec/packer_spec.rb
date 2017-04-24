@@ -393,6 +393,14 @@ describe MessagePack::Packer do
         expect(packer.pack(:symbol).to_s).to eq "\xc7\x06\x00symbol"
       end
     end
+
+    context 'when registering a type for strings' do
+      before { packer.register_type(0x00, ::String) { |str| "xyz" } }
+
+      it 'packs symbols in an ext type' do
+        expect(packer.pack("a string").to_s).to eq "\xc7\x03\x00xyz"
+      end
+    end
   end
 
   describe "fixnum and bignum" do
