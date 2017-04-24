@@ -74,6 +74,7 @@ static VALUE Factory_initialize(int argc, VALUE* argv, VALUE self)
 {
     FACTORY(self, fc);
 
+    fc->has_string_ext_type = false;
     fc->has_symbol_ext_type = false;
 
     switch (argc) {
